@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex,nofollow" />
+<title>EIB APK Uploader</title>
+<style>
+  :root {
+    --bg: #0b0f14; --panel: #131a22; --line: #223040;
+    --ink: #e8eef5; --muted: #8698a8; --accent: #4f9dff; --ok: #37c979; --err: #ff5d5d;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; padding: 32px 16px; }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  h1 { font-size: 1.4rem; letter-spacing: .3px; }
+  h1 small { color: var(--muted); font-weight: 400; font-size: .8rem; display: block; margin-top: 4px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px; margin-top: 20px; }
+  label { display: block; font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-bottom: 6px; }
+  select, input[type=password], input[type=text] {
+    width: 100%; background: #0c1219; border: 1px solid var(--line); color: var(--ink);
+    padding: 11px 12px; border-radius: 8px; font-size: 15px;
+  }
+  .row { margin-bottom: 16px; }
+  .drop {
+    border: 1.5px dashed var(--line); border-radius: 10px; padding: 26px; text-align: center;
+    color: var(--muted); cursor: pointer; transition: border-color .15s, background .15s;
+  }
+  .drop.drag { border-color: var(--accent); background: rgba(79,157,255,.06); color: var(--ink); }
+  .drop b { color: var(--ink); }
+  button {
+    width: 100%; background: var(--accent); color: #06101d; border: 0; font-weight: 700;
+    padding: 13px; border-radius: 8px; font-size: 15px; cursor: pointer; letter-spacing: .3px;
+  }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  .bar { height: 8px; background: #0c1219; border-radius: 6px; overflow: hidden; margin-top: 14px; display: none; }
+  .bar > i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .1s; }
+  .msg { margin-top: 14px; font-size: .9rem; min-height: 1.2em; }
+  .msg.ok { color: var(--ok); } .msg.err { color: var(--err); }
+  table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: .88rem; }
+  th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 500; font-size: .72rem; text-transform: uppercase; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+  .hint { color: var(--muted); font-size: .8rem; margin-top: 8px; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>EIB APK Uploader <small>Replaces the live APK in place. The previous version is backed up automatically.</small></h1>
+
+  <div class="card">
+    <div class="row">
+      <label for="secret">Upload secret</label>
+      <input id="secret" type="password" placeholder="paste the shared secret" autocomplete="off" />
+      <label style="margin-top:8px; text-transform:none; letter-spacing:0;">
+        <input type="checkbox" id="remember" style="width:auto" /> remember on this device
+      </label>
+    </div>
+
+    <div class="row">
+      <label for="app">Target app</label>
+      <select id="app">
+        <option value="cgas">CGAS — cgas.apk</option>
+        <option value="lock">Privacy Guardian (current) — lock.apk</option>
+        <option value="lock-legacy">Privacy Guardian (older) — lock-legacy.apk</option>
+        <option value="vanguard">Vanguard — vanguard.apk</option>
+      </select>
+    </div>
+
+    <div class="row">
+      <label>APK file</label>
+      <div class="drop" id="drop"><b>Click to choose</b> or drag an .apk here<div id="picked" class="hint"></div></div>
+      <input id="file" type="file" accept=".apk,application/vnd.android.package-archive" hidden />
+    </div>
+
+    <button id="go" disabled>Upload &amp; replace</button>
+    <div class="bar" id="bar"><i></i></div>
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <div class="card">
+    <label>Currently live</label>
+    <table>
+      <thead><tr><th>App</th><th>File</th><th class="num">Size</th><th class="num">Updated</th></tr></thead>
+      <tbody id="list"><tr><td colspan="4" class="hint">Enter the secret to load…</td></tr></tbody>
+    </table>
+    <div class="hint">Static downloads are served from <code>/apks/</code>. This panel talks to <code>/api/</code>.</div>
+  </div>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const secret = $('secret'), remember = $('remember'), app = $('app');
+  const drop = $('drop'), fileInput = $('file'), picked = $('picked');
+  const go = $('go'), bar = $('bar'), barFill = bar.firstElementChild, msg = $('msg'), list = $('list');
+  let chosen = null;
+
+  // restore remembered secret
+  const saved = localStorage.getItem('eib_upload_secret');
+  if (saved) { secret.value = saved; remember.checked = true; }
+
+  function fmtBytes(n) {
+    if (!n) return '0 B';
+    const u = ['B','KB','MB','GB']; let i = 0;
+    while (n >= 1024 && i < u.length - 1) { n /= 1024; i++; }
+    return n.toFixed(i ? 1 : 0) + ' ' + u[i];
+  }
+  function fmtDate(s) { return s ? new Date(s).toLocaleString() : '—'; }
+
+  function setChosen(f) {
+    chosen = f;
+    picked.textContent = f ? `${f.name} · ${fmtBytes(f.size)}` : '';
+    refreshGo();
+  }
+  function refreshGo() { go.disabled = !(chosen && secret.value.trim()); }
+
+  drop.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', () => setChosen(fileInput.files[0] || null));
+  ['dragenter','dragover'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.add('drag'); }));
+  ['dragleave','drop'].forEach(e => drop.addEventListener(e, ev => { ev.preventDefault(); drop.classList.remove('drag'); }));
+  drop.addEventListener('drop', ev => { const f = ev.dataTransfer.files[0]; if (f) setChosen(f); });
+  secret.addEventListener('input', () => { refreshGo(); });
+
+  function say(text, kind) { msg.textContent = text; msg.className = 'msg' + (kind ? ' ' + kind : ''); }
+
+  async function loadList() {
+    if (!secret.value.trim()) return;
+    try {
+      const r = await fetch('/api/list', { headers: { Authorization: 'Bearer ' + secret.value.trim() } });
+      if (r.status === 401) { list.innerHTML = '<tr><td colspan="4" class="hint">Wrong secret.</td></tr>'; return; }
+      const d = await r.json();
+      list.innerHTML = Object.entries(d.apps).map(([slug, a]) =>
+        `<tr><td>${slug}</td><td>${a.file}</td><td class="num">${a.exists ? fmtBytes(a.size) : '—'}</td><td class="num">${fmtDate(a.modified)}</td></tr>`
+      ).join('');
+    } catch (e) { list.innerHTML = `<tr><td colspan="4" class="hint">Cannot reach API: ${e.message}</td></tr>`; }
+  }
+  secret.addEventListener('change', loadList);
+
+  go.addEventListener('click', () => {
+    if (!chosen || !secret.value.trim()) return;
+    if (remember.checked) localStorage.setItem('eib_upload_secret', secret.value.trim());
+    else localStorage.removeItem('eib_upload_secret');
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/upload/' + encodeURIComponent(app.value));
+    xhr.setRequestHeader('Authorization', 'Bearer ' + secret.value.trim());
+    xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+    xhr.setRequestHeader('X-Filename', chosen.name);
+
+    go.disabled = true; bar.style.display = 'block'; barFill.style.width = '0%';
+    say('Uploading ' + chosen.name + ' …');
+
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) barFill.style.width = (e.loaded / e.total * 100).toFixed(1) + '%';
+    };
+    xhr.onload = () => {
+      go.disabled = false;
+      let d = {}; try { d = JSON.parse(xhr.responseText); } catch {}
+      if (xhr.status === 200 && d.ok) {
+        barFill.style.width = '100%';
+        say(`✓ Replaced ${d.file} (${fmtBytes(d.size)}). Live now.`, 'ok');
+        loadList();
+      } else {
+        say('✗ ' + (d.error || ('HTTP ' + xhr.status)), 'err');
+      }
+    };
+    xhr.onerror = () => { go.disabled = false; say('✗ Network error', 'err'); };
+    xhr.send(chosen);
+  });
+
+  if (secret.value.trim()) loadList();
+</script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+Served APK files live here at runtime (git-ignored). Filenames:
+  cgas.apk, lock.apk, lock-legacy.apk, vanguard.apk
+nginx serves this directory at /apks/. The upload server writes here.

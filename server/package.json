@@ -1,0 +1,13 @@
+{
+  "name": "eibapks-upload-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Zero-dependency APK upload/replace endpoint for the eibapks site.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}

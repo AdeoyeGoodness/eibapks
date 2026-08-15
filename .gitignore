@@ -1,0 +1,14 @@
+# APK binaries are served/replaced on the server, not tracked in git.
+apks/*.apk
+apks/backups/
+
+# Secrets
+server/.env
+
+# Node
+node_modules/
+npm-debug.log*
+
+# OS junk
+.DS_Store
+Thumbs.db
