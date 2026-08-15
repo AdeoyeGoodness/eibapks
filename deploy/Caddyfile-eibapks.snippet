@@ -1,0 +1,59 @@
+# EIB Apps — append this block to /etc/caddy/Caddyfile, then:
+#   sudo caddy validate --config /etc/caddy/Caddyfile
+#   sudo systemctl reload caddy
+#
+# Requires a DNS A record for the hostname below -> this server's public IP.
+# Caddy fetches the HTTPS cert automatically on first request.
+#
+# Layout on disk:
+#   /var/www/eibapks/site   static site (index.html, cgas/, lock/, vanguard/, admin/)
+#   /var/www/eibapks/apks   APK files, served at /apks/, written by the Node uploader
+# Node upload server listens on 127.0.0.1:8090 and handles /api/* only.
+
+apps.eibstratoc.com {
+    encode gzip zstd
+
+    # Allow large APK uploads (matches server MAX_UPLOAD_BYTES = 300 MB).
+    request_body {
+        max_size 300MB
+    }
+
+    # 1) Never expose APK backups.
+    @backups path /apks/backups/*
+    handle @backups {
+        respond 404
+    }
+
+    # 2) APK downloads — served from the apks dir, forced as attachments,
+    #    never cached so the freshly-uploaded file is always handed out.
+    handle_path /apks/* {
+        root * /var/www/eibapks/apks
+        header Content-Disposition attachment
+        header Cache-Control "no-cache"
+        file_server
+    }
+
+    # 3) Upload / management API -> Node upload server.
+    handle /api/* {
+        reverse_proxy localhost:8090 {
+            transport http {
+                read_timeout 600s
+                write_timeout 600s
+            }
+        }
+    }
+
+    # 4) Everything else: the static site.
+    handle {
+        root * /var/www/eibapks/site
+        file_server
+    }
+
+    # Keep the uploader out of search indexes.
+    header /admin/* X-Robots-Tag "noindex, nofollow"
+
+    header {
+        X-Content-Type-Options "nosniff"
+        -Server
+    }
+}
